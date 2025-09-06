@@ -1,0 +1,121 @@
+# Model Configurations for Local RAG Assistant
+
+# Recommended Models (download with make download-model)
+recommended_models:
+  
+  # Lightweight models (good for testing/development)
+  lightweight:
+    - name: "Mistral-7B-Instruct-v0.2-GGUF"
+      size: "4.37GB"
+      url: "https://huggingface.co/TheBloke/Mistral-7B-Instruct-v0.2-GGUF/resolve/main/mistral-7b-instruct-v0.2.Q4_K_M.gguf"
+      filename: "mistral-7b-instruct-v0.2.Q4_K_M.gguf"
+      description: "Fast, efficient model good for general queries"
+      context_length: 32768
+      
+    - name: "Phi-3-Mini-4K-Instruct-GGUF"
+      size: "2.4GB"
+      url: "https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-q4.gguf"
+      filename: "phi-3-mini-4k-instruct-q4.gguf"
+      description: "Very fast, compact model for quick responses"
+      context_length: 4096
+
+  # Balanced models (recommended for production)
+  balanced:
+    - name: "Llama-2-7B-Chat-GGUF"
+      size: "3.83GB"
+      url: "https://huggingface.co/TheBloke/Llama-2-7B-Chat-GGUF/resolve/main/llama-2-7b-chat.Q4_K_M.gguf"
+      filename: "llama-2-7b-chat.Q4_K_M.gguf"
+      description: "Well-rounded model with good reasoning"
+      context_length: 4096
+      
+    - name: "CodeLlama-7B-Instruct-GGUF"
+      size: "3.83GB"
+      url: "https://huggingface.co/TheBloke/CodeLlama-7B-Instruct-GGUF/resolve/main/codellama-7b-instruct.Q4_K_M.gguf"
+      filename: "codellama-7b-instruct.Q4_K_M.gguf"
+      description: "Specialized for code and technical documentation"
+      context_length: 16384
+
+  # High-performance models (requires more resources)
+  high_performance:
+    - name: "Mixtral-8x7B-Instruct-v0.1-GGUF"
+      size: "26.4GB"
+      url: "https://huggingface.co/TheBloke/Mixtral-8x7B-Instruct-v0.1-GGUF/resolve/main/mixtral-8x7b-instruct-v0.1.Q4_K_M.gguf"
+      filename: "mixtral-8x7b-instruct-v0.1.Q4_K_M.gguf"
+      description: "High-quality responses, requires 16GB+ RAM"
+      context_length: 32768
+      
+    - name: "Llama-2-13B-Chat-GGUF"
+      size: "7.37GB"
+      url: "https://huggingface.co/TheBloke/Llama-2-13B-Chat-GGUF/resolve/main/llama-2-13b-chat.Q4_K_M.gguf"
+      filename: "llama-2-13b-chat.Q4_K_M.gguf"
+      description: "Larger Llama model with improved reasoning"
+      context_length: 4096
+
+# Model-specific configurations
+model_configs:
+  
+  # Default configuration for most models
+  default:
+    temperature: 0.1
+    top_p: 0.9
+    top_k: 40
+    repeat_penalty: 1.1
+    max_tokens: 512
+    
+  # Mistral-specific tuning
+  mistral:
+    temperature: 0.2
+    top_p: 0.95
+    top_k: 50
+    repeat_penalty: 1.05
+    max_tokens: 1024
+    
+  # CodeLlama-specific tuning  
+  codellama:
+    temperature: 0.05
+    top_p: 0.9
+    top_k: 20
+    repeat_penalty: 1.1
+    max_tokens: 2048
+    
+  # Mixtral-specific tuning
+  mixtral:
+    temperature: 0.15
+    top_p: 0.9
+    top_k: 40
+    repeat_penalty: 1.02
+    max_tokens: 1024
+
+# Hardware requirements per model category
+hardware_requirements:
+  lightweight:
+    min_ram: "8GB"
+    recommended_ram: "16GB"
+    min_storage: "5GB"
+    
+  balanced:
+    min_ram: "16GB"
+    recommended_ram: "32GB" 
+    min_storage: "10GB"
+    
+  high_performance:
+    min_ram: "32GB"
+    recommended_ram: "64GB"
+    min_storage: "30GB"
+
+# Embedding models
+embedding_models:
+  - name: "all-MiniLM-L6-v2"
+    size: "80MB"
+    dimensions: 384
+    description: "Fast, lightweight embeddings"
+    
+  - name: "all-mpnet-base-v2"
+    size: "420MB"
+    dimensions: 768
+    description: "High-quality embeddings, slower"
+    
+  - name: "e5-large-v2"
+    size: "1.34GB"
+    dimensions: 1024
+    description: "State-of-the-art embeddings"

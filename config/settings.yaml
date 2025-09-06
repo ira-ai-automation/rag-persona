@@ -1,0 +1,187 @@
+# Local RAG Assistant Configuration
+
+# Application Settings
+app:
+  name: "Local RAG Assistant"
+  version: "1.0.0"
+  debug: false
+  log_level: "INFO"
+
+# Paths
+paths:
+  models: "./models"
+  data: "./data"
+  index: "./index"
+  logs: "./logs"
+  licenses: "./licenses"
+  config: "./config"
+
+# Embedding Model Configuration
+embedding:
+  model_name: "all-MiniLM-L6-v2"
+  device: "cpu"  # or "cuda" if available
+  batch_size: 32
+  max_length: 512
+  normalize_embeddings: true
+
+# Document Processing
+document_processing:
+  supported_formats: [".pdf", ".doc", ".docx"]
+  chunk_size: 1000
+  chunk_overlap: 200
+  min_chunk_size: 100
+  max_chunks_per_doc: 1000
+  
+# System-wide Document Scanning
+scanning:
+  # Scan modes: "manual", "home", "system", "custom"
+  scan_mode: "manual"
+  
+  # Target directories for different scan modes
+  target_directories:
+    # Manual mode: only scan specified data directory
+    manual: ["./data"]
+    
+    # Home mode: scan user's home directory
+    home: ["~"]
+    
+    # System mode: scan entire system (requires sudo)
+    system: ["/", "/home", "/Users", "/opt", "/var/log"]
+    
+    # Custom mode: user-defined directories
+    custom: []
+  
+  # Directory exclusions (applied to all scan modes)
+  exclude_directories:
+    - "/proc"
+    - "/sys" 
+    - "/dev"
+    - "/tmp"
+    - "/var/tmp"
+    - "/.git"
+    - "/node_modules"
+    - "/__pycache__"
+    - "/.cache"
+    - "/.local/share/Trash"
+    - "/Library/Caches"
+    - "/System/Library"
+    - "/Applications"
+    - "/.Trash"
+    - "/Windows"
+    - "/Program Files"
+    - "/ProgramData"
+  
+  # File exclusions
+  exclude_files:
+    - ".*"  # Hidden files (dotfiles)
+    - "*.log"
+    - "*.tmp"
+    - "*.cache"
+    - "*.pyc"
+    - "*.pyo"
+    - "*.pyd"
+    - "*.so"
+    - "*.dll"
+    - "*.exe"
+    - "*.bin"
+    - "*.iso"
+    - "*.dmg"
+    - "*.txt"  # Exclude plain text files
+    - "*.md"   # Exclude markdown files
+    - "*.rtf"  # Exclude RTF files
+    - "*.odt"  # Exclude ODT files
+    - "*.tex"  # Exclude TeX files
+  
+  # Size limits
+  max_file_size_mb: 50
+  max_total_size_gb: 10
+  
+  # Performance settings
+  max_workers: 4
+  batch_size: 100
+  follow_symlinks: false
+  
+  # Permission handling
+  skip_permission_denied: true
+  require_sudo_confirmation: true
+  
+  # Security settings
+  scan_sensitive_dirs: false  # /etc, /root, etc.
+  hash_file_paths: true  # Hash file paths for privacy
+
+# Vector Database (FAISS)
+vector_db:
+  index_type: "IndexFlatIP"  # Inner Product for cosine similarity
+  use_gpu: false
+  nprobe: 32  # for IVF indices
+  save_interval: 100  # Save index every N documents
+
+# Language Model
+llm:
+  model_path: "./models/mistral-7b-instruct-v0.2.Q4_K_M.gguf"
+  context_length: 4096
+  max_tokens: 512
+  temperature: 0.1
+  top_p: 0.9
+  top_k: 40
+  repeat_penalty: 1.1
+  threads: -1  # Use all available threads
+
+# RAG Pipeline
+rag:
+  retrieval_k: 4  # Number of documents to retrieve
+  rerank: false
+  rerank_k: 10
+  min_similarity: 0.3
+  max_context_length: 3000
+  include_sources: true
+
+# System Prompts
+prompts:
+  system: |
+    You are a helpful AI assistant with access to a local knowledge base. 
+    Answer questions based on the provided context. Be concise, accurate, and cite sources.
+    If you cannot answer based on the context, say so clearly.
+  
+  context_template: |
+    Context from documents:
+    {context}
+    
+    Question: {question}
+    
+    Answer based on the context above:
+
+# API Settings
+api:
+  host: "127.0.0.1"
+  port: 8000
+  reload: false
+  workers: 1
+
+# Web Interface
+web:
+  host: "127.0.0.1"
+  port: 8501
+  title: "Local RAG Assistant"
+  theme: "light"
+
+# Licensing
+licensing:
+  enabled: true
+  key_size: 2048
+  token_expiry_days: 365
+  max_queries_per_day: 1000
+
+# Logging
+logging:
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file_rotation: "midnight"
+  backup_count: 7
+  max_file_size: "10MB"
+
+# Performance
+performance:
+  cache_embeddings: true
+  cache_size: 1000
+  parallel_processing: true
+  max_workers: 4
