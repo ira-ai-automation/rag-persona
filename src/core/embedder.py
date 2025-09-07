@@ -138,7 +138,7 @@ class DocumentEmbedder:
             Embedding array with shape (embedding_dim,).
         """
         # Check cache first if caching is enabled
-        if self.config.performance.cache_embeddings:
+        if self.config.performance.get("cache_embeddings", False):
             text_hash = str(hash(text))
             if text_hash in self._embedding_cache:
                 return self._embedding_cache[text_hash]
@@ -147,8 +147,8 @@ class DocumentEmbedder:
         embedding = embeddings[0]
         
         # Cache the result if caching is enabled
-        if self.config.performance.cache_embeddings:
-            if len(self._embedding_cache) >= self.config.performance.cache_size:
+        if self.config.performance.get("cache_embeddings", False):
+            if len(self._embedding_cache) >= self.config.performance.get("cache_size", 1000):
                 # Remove oldest entry (simple FIFO)
                 oldest_key = next(iter(self._embedding_cache))
                 del self._embedding_cache[oldest_key]

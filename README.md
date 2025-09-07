@@ -1,5 +1,35 @@
 # Local RAG Assistant - Standalone Software
 
+A fully offline AI assistant that answers questions using your personal documents. No cloud dependency, complete privacy, powered by local LLMs.
+
+## 🚀 Quick Start (3 Steps)
+
+### 1. Setup Environment
+```bash
+# Clone and setup
+git clone <your-repo-url>
+cd rag-persona
+python3 setup.py    # Interactive setup with model download
+```
+
+### 2. Index Your Documents
+```bash
+# For PDF and Word documents from your home directory:
+make ingest-home
+
+# OR place documents in data/ folder and run:
+make ingest
+```
+
+### 3. Start Asking Questions
+```bash
+make run    # Start CLI assistant
+```
+
+That's it! 🎉 Your personal AI assistant is ready.
+
+---
+
 ## Problem Statement
 
 Modern professionals and researchers deal with large volumes of unstructured data requiring:
@@ -178,6 +208,43 @@ rag-persona/
 ## License
 
 MIT License - See LICENSE file for details.
+
+## 📊 Current System Status
+
+✅ **System Operational**: Successfully indexed 195 documents (290.9 MB)  
+✅ **Document Types**: PDF and Word documents optimized  
+✅ **Index Ready**: Vector database operational with FAISS  
+✅ **Model Downloaded**: Mistral-7B-Instruct-v0.2 (4.1GB) ready  
+
+## 🔧 Available Commands
+
+```bash
+# Setup and Installation
+make setup              # Manual setup with dependencies
+make easy-setup         # Run automated setup.py
+python setup.py         # Interactive setup with options
+
+# Model Management  
+make download-model     # Download recommended Mistral-7B model
+make list-models        # Show downloaded models
+make model-info         # Display current model information
+
+# Document Processing
+make ingest             # Index documents from data/ folder
+make ingest-home        # Index from entire home directory  
+make ingest-system      # Index from entire system (requires sudo)
+make ingest-custom      # Index from custom directories
+
+# Running the Assistant
+make run               # Start CLI interface
+make web               # Start Streamlit web interface
+make api               # Start FastAPI REST server
+
+# Utilities
+make validate          # Validate system configuration
+make clean             # Clean temporary files
+make clean-all         # Clean everything including models
+```
 
 ## Support
 
