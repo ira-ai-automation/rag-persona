@@ -295,3 +295,20 @@ class RAGPipeline:
         
         # Clear any resources
         self.clear_cache()
+        self.cleanup()
+    
+    def cleanup(self):
+        """Clean up pipeline resources to prevent memory leaks."""
+        try:
+            if hasattr(self.generator, 'cleanup'):
+                self.generator.cleanup()
+            if hasattr(self.embedder, 'cleanup'):
+                self.embedder.cleanup()
+            if hasattr(self.retriever, 'cleanup'):
+                self.retriever.cleanup()
+        except Exception as e:
+            self.logger.warning(f"Error during pipeline cleanup: {e}")
+    
+    def __del__(self):
+        """Cleanup resources when the object is deleted."""
+        self.cleanup()

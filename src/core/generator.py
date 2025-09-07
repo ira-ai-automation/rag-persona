@@ -43,6 +43,21 @@ class LLMGenerator:
         if Llama is None:
             self.logger.warning("llama-cpp-python not available - generation features disabled")
     
+    def __del__(self):
+        """Cleanup resources when the object is deleted."""
+        self.cleanup()
+    
+    def cleanup(self):
+        """Clean up model resources to prevent memory leaks."""
+        if self.model is not None:
+            try:
+                self.logger.debug("Cleaning up LLM model resources")
+                # Force garbage collection of the model
+                del self.model
+                self.model = None
+            except Exception as e:
+                self.logger.warning(f"Error during model cleanup: {e}")
+    
     def load_model(self) -> None:
         """Load the LLM model."""
         if Llama is None:
@@ -57,17 +72,24 @@ class LLMGenerator:
         try:
             self.logger.info(f"Loading LLM model from {model_path}")
             
-            # Determine number of threads
+            # Determine number of threads - limit to avoid segfaults on macOS
             n_threads = self.config.llm.threads
             if n_threads <= 0:
                 import os
-                n_threads = os.cpu_count() or 4
+                n_threads = min(os.cpu_count() or 4, 4)  # Cap at 4 threads to prevent issues
+            else:
+                n_threads = min(n_threads, 4)  # Cap at 4 threads maximum
             
             self.model = Llama(
                 model_path=str(model_path),
                 n_ctx=self.config.llm.context_length,
                 n_threads=n_threads,
-                verbose=False
+                verbose=False,
+                seed=-1,  # Use random seed
+                n_batch=512,  # Reduce batch size to prevent memory issues
+                use_mmap=True,  # Use memory mapping for better memory management
+                use_mlock=False,  # Disable memory locking to prevent issues
+                n_gpu_layers=0  # Force CPU-only mode to avoid GPU-related segfaults
             )
             
             self.logger.info("LLM model loaded successfully")

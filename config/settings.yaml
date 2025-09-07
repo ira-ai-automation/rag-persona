@@ -125,7 +125,7 @@ llm:
   top_p: 0.9
   top_k: 40
   repeat_penalty: 1.1
-  threads: -1  # Use all available threads
+  threads: 4  # Use 4 threads for stability (was -1)
 
 # RAG Pipeline
 rag:

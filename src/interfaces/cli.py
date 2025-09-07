@@ -2,6 +2,8 @@
 
 import sys
 import time
+import signal
+import atexit
 from pathlib import Path
 from typing import Optional
 import click
@@ -32,6 +34,17 @@ class RAGAssistantCLI:
         self.pipeline = None
         self.license_validator = None
         self.current_license = None
+        
+        # Register cleanup handlers
+        atexit.register(self.cleanup)
+        signal.signal(signal.SIGINT, self._signal_handler)
+        signal.signal(signal.SIGTERM, self._signal_handler)
+    
+    def _signal_handler(self, signum, frame):
+        """Handle signals for graceful shutdown."""
+        self.console.print("\n[yellow]Received shutdown signal, cleaning up...[/yellow]")
+        self.cleanup()
+        sys.exit(0)
         
     def setup(self) -> bool:
         """Setup the CLI application."""
@@ -356,6 +369,21 @@ knowledge base and provide an answer with source citations.
             self.console.print("\n[yellow]Goodbye![/yellow]")
         except Exception as e:
             self.console.print(f"\n[red]Unexpected error: {e}[/red]")
+        finally:
+            # Ensure proper cleanup
+            self.cleanup()
+    
+    def cleanup(self):
+        """Clean up CLI resources."""
+        try:
+            if self.pipeline:
+                self.pipeline.cleanup()
+                self.pipeline = None
+        except Exception as e:
+            if hasattr(self, 'logger'):
+                self.logger.warning(f"Error during CLI cleanup: {e}")
+            else:
+                print(f"Warning: Error during CLI cleanup: {e}")
 
 
 @click.command()
