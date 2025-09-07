@@ -123,9 +123,16 @@ class RAGAssistantCLI:
                 transient=True
             ) as progress:
                 
-                task = progress.add_task("Initializing RAG pipeline...", total=None)
-                
+                # Step 1: Validate setup
+                task = progress.add_task("Validating setup...", total=None)
                 self.pipeline = RAGPipeline(self.config)
+                validation_results = self.pipeline.validate_setup()
+                
+                # Show validation results
+                progress.update(task, description="Checking components...")
+                
+                # Step 2: Initialize with better error reporting
+                progress.update(task, description="Initializing RAG pipeline...")
                 self.pipeline.initialize()
                 
                 progress.update(task, description="Pipeline ready!")
@@ -134,6 +141,20 @@ class RAGAssistantCLI:
             
         except Exception as e:
             self.console.print(f"[red]Pipeline initialization failed: {e}[/red]")
+            
+            # Show diagnostic information if available
+            if hasattr(self, 'pipeline') and self.pipeline:
+                try:
+                    validation = self.pipeline.validate_setup()
+                    self.console.print("[yellow]Diagnostic information:[/yellow]")
+                    for key, value in validation.items():
+                        status = "✓" if value else "✗"
+                        self.console.print(f"  {status} {key}: {value}")
+                except:
+                    pass
+            
+            # Clear the pipeline object so we don't try to use a failed pipeline
+            self.pipeline = None
             return False
     
     def show_welcome(self) -> None:

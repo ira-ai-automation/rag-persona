@@ -384,3 +384,14 @@ class VectorRetriever:
         except Exception as e:
             self.logger.error(f"Failed to remove documents for {file_path}: {e}")
             return 0
+    
+    def cleanup(self) -> None:
+        """Clean up retriever resources."""
+        try:
+            if self.index is not None:
+                # Clear FAISS index from memory
+                del self.index
+                self.index = None
+                self.logger.debug("FAISS index cleared from memory")
+        except Exception as e:
+            self.logger.warning(f"Error during retriever cleanup: {e}")

@@ -218,6 +218,17 @@ class DocumentEmbedder:
         self._embedding_cache.clear()
         self.logger.info("Embedding cache cleared")
     
+    def cleanup(self) -> None:
+        """Clean up embedder resources."""
+        try:
+            self.clear_cache()
+            if self.model is not None:
+                # Clear model from memory
+                del self.model
+                self.model = None
+        except Exception as e:
+            self.logger.warning(f"Error during embedder cleanup: {e}")
+    
     def __del__(self):
         """Cleanup when object is deleted."""
         if hasattr(self, '_embedding_cache'):

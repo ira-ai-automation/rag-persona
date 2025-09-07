@@ -49,26 +49,45 @@ class RAGPipeline:
         try:
             self.logger.info("Initializing RAG pipeline...")
             
+            # Ensure all required directories exist
+            from ..utils.config import ensure_directories
+            ensure_directories(self.config)
+            
             # Load embedding model
-            self.embedder.load_model()
+            try:
+                self.logger.info("Loading embedding model...")
+                self.embedder.load_model()
+                self.logger.info("✓ Embedding model loaded successfully")
+            except Exception as e:
+                self.logger.error(f"Failed to load embedding model: {e}")
+                raise RuntimeError(f"Embedding model initialization failed: {e}")
             
             # Initialize or load vector index
-            if not self.retriever.load_index():
-                embedding_dim = self.embedder.get_embedding_dimension()
-                self.retriever.initialize_index(embedding_dim)
+            try:
+                self.logger.info("Loading or initializing vector index...")
+                if not self.retriever.load_index():
+                    embedding_dim = self.embedder.get_embedding_dimension()
+                    self.retriever.initialize_index(embedding_dim)
+                self.logger.info("✓ Vector index ready")
+            except Exception as e:
+                self.logger.error(f"Failed to initialize vector index: {e}")
+                raise RuntimeError(f"Vector index initialization failed: {e}")
             
             # Load LLM model (optional for indexing)
             try:
+                self.logger.info("Loading LLM model...")
                 self.generator.load_model()
+                self.logger.info("✓ LLM model loaded successfully")
             except Exception as e:
                 self.logger.warning(f"LLM model not available: {e}")
-                self.logger.info("Continuing with indexing-only mode")
+                self.logger.info("Continuing with indexing-only mode (queries will not work)")
             
             self._initialized = True
             self.logger.info("RAG pipeline initialized successfully")
             
         except Exception as e:
             self.logger.error(f"Failed to initialize RAG pipeline: {e}")
+            self._initialized = False
             raise
     
     def query(
@@ -107,25 +126,37 @@ class RAGPipeline:
             
             self.logger.debug(f"Retrieved {len(retrieved_docs)} documents in {retrieval_time:.2f}s")
             
-            # Step 3: Generate response
+            # Step 3: Generate response (if LLM is available)
             generation_start = time.time()
             
-            if retrieved_docs:
-                generation_result = self.generator.generate_with_context(
-                    query_text, 
-                    retrieved_docs,
-                    stream=stream,
-                    **generation_kwargs
-                )
+            # Check if generator is available
+            if not hasattr(self.generator, 'model') or self.generator.model is None:
+                # LLM not available, return search results only
+                self.logger.warning("LLM model not available, returning search results only")
+                generation_result = type('GenerationResult', (), {
+                    'text': f"Found {len(retrieved_docs)} relevant documents. LLM not available for response generation.",
+                    'tokens_generated': 0,
+                    'generation_time': 0.0,
+                    'metadata': {'llm_available': False}
+                })()
             else:
-                # No context found, generate without context
-                self.logger.warning("No relevant documents found, generating without context")
-                prompt = f"{self.config.prompts['system']}\n\nQuestion: {query_text}\n\nAnswer:"
-                generation_result = self.generator.generate(
-                    prompt,
-                    stream=stream,
-                    **generation_kwargs
-                )
+                # LLM available, generate response
+                if retrieved_docs:
+                    generation_result = self.generator.generate_with_context(
+                        query_text, 
+                        retrieved_docs,
+                        stream=stream,
+                        **generation_kwargs
+                    )
+                else:
+                    # No context found, generate without context
+                    self.logger.warning("No relevant documents found, generating without context")
+                    prompt = f"{self.config.prompts['system']}\n\nQuestion: {query_text}\n\nAnswer:"
+                    generation_result = self.generator.generate(
+                        prompt,
+                        stream=stream,
+                        **generation_kwargs
+                    )
             
             generation_time = time.time() - generation_start
             total_time = time.time() - start_time
