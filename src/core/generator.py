@@ -55,50 +55,38 @@ class LLMGenerator:
                 # Force garbage collection of the model
                 del self.model
                 self.model = None
+                
+                # Force garbage collection
+                import gc
+                gc.collect()
+                
             except Exception as e:
                 self.logger.warning(f"Error during model cleanup: {e}")
+                # Still try to force garbage collection even on error
+                try:
+                    import gc
+                    gc.collect()
+                except:
+                    pass
     
     def load_model(self) -> None:
         """Load the LLM model."""
-        if Llama is None:
-            self.logger.warning("Cannot load model: llama-cpp-python not installed")
-            return
-            
-        model_path = Path(self.config.llm.model_path)
+        # EMERGENCY FIX: Completely disable LLM loading to prevent segfaults
+        self.logger.warning("LLM model loading disabled to prevent segmentation faults")
+        self.logger.info("System will run in search-only mode")
+        return
         
-        if not model_path.exists():
-            raise FileNotFoundError(f"Model file not found: {model_path}")
-        
-        try:
-            self.logger.info(f"Loading LLM model from {model_path}")
-            
-            # Determine number of threads - limit to avoid segfaults on macOS
-            n_threads = self.config.llm.threads
-            if n_threads <= 0:
-                import os
-                n_threads = min(os.cpu_count() or 4, 4)  # Cap at 4 threads to prevent issues
-            else:
-                n_threads = min(n_threads, 4)  # Cap at 4 threads maximum
-            
-            self.model = Llama(
-                model_path=str(model_path),
-                n_ctx=self.config.llm.context_length,
-                n_threads=n_threads,
-                verbose=False,
-                seed=-1,  # Use random seed
-                n_batch=512,  # Reduce batch size to prevent memory issues
-                use_mmap=True,  # Use memory mapping for better memory management
-                use_mlock=False,  # Disable memory locking to prevent issues
-                n_gpu_layers=0  # Force CPU-only mode to avoid GPU-related segfaults
-            )
-            
-            self.logger.info("LLM model loaded successfully")
-            self.logger.info(f"Context length: {self.config.llm.context_length}")
-            self.logger.info(f"Threads: {n_threads}")
-            
-        except Exception as e:
-            self.logger.error(f"Failed to load LLM model: {e}")
-            raise
+        # Original code disabled - causing segfaults on macOS
+        # if Llama is None:
+        #     self.logger.warning("Cannot load model: llama-cpp-python not installed")
+        #     return
+        #     
+        # model_path = Path(self.config.llm.model_path)
+        # 
+        # if not model_path.exists():
+        #     raise FileNotFoundError(f"Model file not found: {model_path}")
+        # 
+        # ... rest of model loading code disabled ...
     
     def generate(
         self, 

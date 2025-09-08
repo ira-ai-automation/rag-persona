@@ -164,7 +164,7 @@ index-stats:
 .PHONY: run
 run:
 	@echo "Starting Local RAG Assistant (CLI)..."
-	$(VENV_PYTHON) -m $(SRC_DIR).interfaces.cli
+	$(VENV_PYTHON) fix_environment.py $(VENV_PYTHON) -m $(SRC_DIR).interfaces.cli
 
 .PHONY: web
 web:

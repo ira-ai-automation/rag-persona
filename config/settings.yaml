@@ -125,7 +125,7 @@ llm:
   top_p: 0.9
   top_k: 40
   repeat_penalty: 1.1
-  threads: 4  # Use 4 threads for stability (was -1)
+  threads: 2  # Use 2 threads for maximum stability (was -1)
 
 # RAG Pipeline
 rag:
@@ -183,5 +183,5 @@ logging:
 performance:
   cache_embeddings: true
   cache_size: 1000
-  parallel_processing: true
-  max_workers: 4
+  parallel_processing: false  # Disabled to prevent segfaults
+  max_workers: 1  # Reduced to prevent multiprocessing issues

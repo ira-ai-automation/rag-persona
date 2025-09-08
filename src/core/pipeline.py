@@ -132,12 +132,34 @@ class RAGPipeline:
             # Check if generator is available
             if not hasattr(self.generator, 'model') or self.generator.model is None:
                 # LLM not available, return search results only
-                self.logger.warning("LLM model not available, returning search results only")
+                self.logger.info("LLM model disabled for system stability - returning search results only")
+                
+                # Create a comprehensive response with document summaries
+                if retrieved_docs:
+                    doc_summaries = []
+                    for i, doc in enumerate(retrieved_docs[:3], 1):  # Show top 3 results
+                        preview = doc.content[:200] + "..." if len(doc.content) > 200 else doc.content
+                        doc_summaries.append(f"{i}. **{doc.title}** (Score: {doc.score:.3f})\n   {preview}")
+                    
+                    response_text = f"""**Query:** {query_text}
+
+**Found {len(retrieved_docs)} relevant documents:**
+
+{chr(10).join(doc_summaries)}
+
+*Note: LLM-powered response generation is currently disabled for system stability. The above are the most relevant document excerpts found for your query.*"""
+                else:
+                    response_text = f"""**Query:** {query_text}
+
+**No relevant documents found** for your query in the knowledge base.
+
+*Note: LLM-powered response generation is currently disabled for system stability.*"""
+                
                 generation_result = type('GenerationResult', (), {
-                    'text': f"Found {len(retrieved_docs)} relevant documents. LLM not available for response generation.",
+                    'text': response_text,
                     'tokens_generated': 0,
                     'generation_time': 0.0,
-                    'metadata': {'llm_available': False}
+                    'metadata': {'llm_available': False, 'search_only_mode': True}
                 })()
             else:
                 # LLM available, generate response

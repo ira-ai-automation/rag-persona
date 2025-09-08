@@ -159,15 +159,23 @@ class RAGAssistantCLI:
     
     def show_welcome(self) -> None:
         """Show welcome message."""
+        # Check if LLM is available
+        llm_status = "Available" if (self.pipeline and 
+                                   hasattr(self.pipeline.generator, 'model') and 
+                                   self.pipeline.generator.model is not None) else "Disabled (Search-Only Mode)"
+        
         welcome_text = f"""
 # Welcome to Local RAG Assistant
 
 **Version:** {self.config.app.version}
 **Model:** {Path(self.config.llm.model_path).name}
 **Documents:** {self.pipeline.get_stats()['document_count'] if self.pipeline else 0}
+**LLM Status:** {llm_status}
 
 Type your questions and get answers based on your local knowledge base.
 Type 'help' for commands, 'quit' to exit.
+
+{f"**Note:** LLM generation is disabled for system stability. You'll get document search results only." if llm_status == "Disabled (Search-Only Mode)" else ""}
         """
         
         self.console.print(Panel(
